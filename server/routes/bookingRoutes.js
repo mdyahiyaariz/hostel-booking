@@ -1,5 +1,5 @@
 import express from 'express';
-import { checkAvailabilityAPI, createBooking, getHotelBookings, getUserBookings, getRoomReviews, getRoomReviewSummaries, submitBookingReview } from '../controllers/bookingController.js';
+import { checkAvailabilityAPI, createBooking, getHotelBookings, getUserBookings, getRoomReviews, getRoomReviewSummaries, submitBookingReview, stripePayment } from '../controllers/bookingController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const bookingRouter = express.Router();
@@ -11,5 +11,6 @@ bookingRouter.get('/hotel', protect, getHotelBookings);
 bookingRouter.post('/:bookingId/review', protect, submitBookingReview);
 bookingRouter.get('/reviews/summary', getRoomReviewSummaries);
 bookingRouter.get('/reviews/room/:roomId', getRoomReviews);
+bookingRouter.post('/stripe-payment', protect, stripePayment);
 
 export default bookingRouter;
