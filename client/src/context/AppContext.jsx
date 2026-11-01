@@ -14,7 +14,7 @@ export const AppProvider = ({children}) => {
     const { user } = useUser();
     const { getToken } = useAuth();
 
-    const [isOwner, setIsOwner] = useState(false);
+    const [isOwner, setIsOwner] = useState(null);
     const [showHotelReg, setShowHotelReg] = useState(false);
     const [searchedCities, setSearchedCities] = useState([])
     const [rooms, setRooms] = useState([])

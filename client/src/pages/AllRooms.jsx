@@ -124,8 +124,8 @@ const AllRooms = () => {
     <div className='flex flex-col-reverse lg:flex-row items-start justify-between pt-28 md:pt-35 px-4 md:px-16 lg:px-24 xl:px-32'>
         <div>
             <div className='flex flex-col items-start text-left'>
-                <h1 className='font-playfair text-4xl md:text-[40px]'>Hotel Rooms</h1>
-                <p className='text-sm md:text-base text-gray-500/90 mt-2 max-w-174'>Take advantage of our limited-time offers and special packages to enhanc your stay and create unforgettable memories.</p>
+                <h1 className='font-playfair text-4xl md:text-[40px]'>Hostel Rooms</h1>
+                <p className='text-sm md:text-base text-gray-500/90 mt-2 max-w-174'>Take advantage of our limited-time offers and special packages to enhance your stay and create unforgettable memories.</p>
             </div>
 
             {filteredRooms.map((room)=>(
@@ -155,7 +155,7 @@ const AllRooms = () => {
                             ))}
                         </div>
                         {/*Room Price per Night*/}
-                        <p className='text-xl font-medium text-gray-700'>${room.pricePerNight} /night</p>
+                        <p className='text-xl font-medium text-gray-700'>{import.meta.env.VITE_CURRENCY || '₹'}{room.pricePerNight} /night</p>
                     </div>
                 </div>
             ))}

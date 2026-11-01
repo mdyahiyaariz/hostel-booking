@@ -19,7 +19,7 @@ const RecommendedHotels = () => {
 
   return recommended.length > 0 && (
     <div className='flex flex-col items-center px-6 md:px-16 lg:px-24 bg-slate-50 py-20'>
-        <Title title='Recommended Hotels' subTitle='Discover our handpicked selection of exceptional properties around the world, offering unparalleled luxury and unforgettable experiences.'/>
+        <Title title='Recommended Hostels' subTitle='Ditch the expensive hotels. Discover safe, wallet-friendly campus hostel stays wherever your journey takes you across India.'/>
 
         <div className='flex flex-wrap items-scenter justify-center gap-6 mt-20'>
             {recommended.slice(0,4).map((room,index)=>(

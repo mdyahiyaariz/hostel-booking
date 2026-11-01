@@ -3,16 +3,18 @@ import Navbar from '../../components/hotelOwner/Navbar'
 import Sidebar from '../../components/hotelOwner/Sidebar'
 import { Outlet } from 'react-router-dom'
 import { useAppContext } from '../../context/AppContext'
+import { useNavigate } from 'react-router-dom'
 
 const Layout = () => {
 
   const {isOwner} = useAppContext();
+  const navigate = useNavigate();
 
-  useEffect(()=>{
-    if(!isOwner){
-      navigate('/')
-    }
-  })
+  useEffect(() => {
+  if (isOwner === false) {
+    navigate('/', { replace: true });
+  }
+}, [isOwner, navigate]);
 
   return (
     <div className='flex flex-col h-screen'>

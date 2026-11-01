@@ -21,22 +21,27 @@ const clerkWebhooks = async (req, res) => {
         // Get data
         const { data, type } = req.body;
 
-        const userData = {
-            _id: data.id,
-            email: data.email_addresses?.[0]?.email_address || "",
-            username: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
-            image: data.image_url || "",
-        };
-
         // Handle events
         switch (type) {
 
             case "user.created": {
+                const userData = {
+                    _id: data.id,
+                    email: data.email_addresses?.[0]?.email_address || "",
+                    username: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
+                    image: data.image_url || "",
+                };
                 await User.create(userData);
                 break;
             }
 
             case "user.updated": {
+                const userData = {
+                    _id: data.id,
+                    email: data.email_addresses?.[0]?.email_address || "",
+                    username: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
+                    image: data.image_url || "",
+                };
                 await User.findByIdAndUpdate(
                     data.id,
                     userData,
@@ -46,6 +51,12 @@ const clerkWebhooks = async (req, res) => {
             }
 
             case "user.deleted": {
+                const userData = {
+                    _id: data.id,
+                    email: data.email_addresses?.[0]?.email_address || "",
+                    username: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
+                    image: data.image_url || "",
+                };
                 const hotels = await Hotel.find({ owner: data.id }).select("_id");
                 const hotelIds = hotels.map(hotel => hotel._id.toString());
 
