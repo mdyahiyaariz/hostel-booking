@@ -18,7 +18,9 @@ const bookingSchema = new mongoose.Schema({
         required: true,
         default: 'Pay At Hotel'
     },
-    isPaid: {type: Boolean, default: false}
+    isPaid: {type: Boolean, default: false},
+    rating: {type: Number, min: 1, max: 5},
+    reviewText: {type: String, trim: true, maxlength: 1000, default: ''}
 },{timestamps: true});
 
 const Booking = mongoose.model('Booking', bookingSchema);

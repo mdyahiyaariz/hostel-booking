@@ -2,6 +2,7 @@ import transporter from "../config/nodemailer.js";
 import Booking from "../models/Booking.js"
 import Hotel from "../models/Hotel.js";
 import Room from "../models/Room.js";
+import mongoose from "mongoose";
 
 // function to check availability of room
 const checkAvailability = async ({ checkInDate, checkOutDate, room }) => {
@@ -115,5 +116,116 @@ export const getHotelBookings = async (req,res) => {
         res.json({success: true, dashboardData: {totalBookings, totalRevenue, bookings}});
     } catch (error) {
         res.json({success: false, message: 'Failed to fetch bookings'})
+    }
+}
+
+export const submitBookingReview = async (req, res) => {
+    try {
+        const {bookingId} = req.params;
+        const {rating, reviewText = ''} = req.body;
+        const parsedRating = Number(rating);
+
+        if(!mongoose.isValidObjectId(bookingId)) {
+            return res.status(400).json({success: false, message: 'Invalid booking ID'});
+        }
+        if(!Number.isInteger(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+            return res.status(400).json({success: false, message: 'Rating must be a whole number from 1 to 5'});
+        }
+        if(typeof reviewText !== 'string' || reviewText.trim().length > 1000) {
+            return res.status(400).json({success: false, message: 'Review text must be 1000 characters or fewer'});
+        }
+
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+        const booking = await Booking.findOneAndUpdate(
+            {
+                _id: bookingId,
+                user: req.user._id,
+                checkOutDate: {$lt: today},
+                status: {$ne: 'cancelled'},
+                $or: [{rating: {$exists: false}}, {rating: null}]
+            },
+            {$set: {rating: parsedRating, reviewText: reviewText.trim()}},
+            {new: true, runValidators: true}
+        );
+
+        if(!booking) {
+            const existingBooking = await Booking.findOne({_id: bookingId, user: req.user._id});
+            if(!existingBooking) {
+                return res.status(404).json({success: false, message: 'Booking not found'});
+            }
+            if(existingBooking.rating) {
+                return res.status(409).json({success: false, message: 'This booking has already been reviewed'});
+            }
+            if(existingBooking.status === 'cancelled') {
+                return res.status(400).json({success: false, message: 'Cancelled bookings cannot be reviewed'});
+            }
+            return res.status(400).json({success: false, message: 'You can review this booking after its check-out date'});
+        }
+
+        res.json({success: true, message: 'Review submitted successfully'});
+    } catch (error) {
+        res.status(500).json({success: false, message: error.message});
+    }
+}
+
+export const getRoomReviews = async (req, res) => {
+    try {
+        const {roomId} = req.params;
+        if(!mongoose.isValidObjectId(roomId)) {
+            return res.status(400).json({success: false, message: 'Invalid room ID'});
+        }
+        const room = await Room.findById(roomId).select('_id');
+        if(!room) {
+            return res.status(404).json({success: false, message: 'Room not found'});
+        }
+
+        const [summary] = await Booking.aggregate([
+            {$match: {room: roomId, rating: {$gte: 1, $lte: 5}}},
+            {$group: {_id: null, averageRating: {$avg: '$rating'}, totalReviews: {$sum: 1}}}
+        ]);
+        const bookings = await Booking.find({room: roomId, rating: {$gte: 1, $lte: 5}})
+            .populate('user', 'username image')
+            .sort({updatedAt: -1});
+        const reviews = bookings.map(booking => ({
+            rating: booking.rating,
+            reviewText: booking.reviewText,
+            createdAt: booking.updatedAt,
+            username: booking.user?.username || 'Guest',
+            userImage: booking.user?.image || ''
+        }));
+
+        res.json({
+            success: true,
+            averageRating: summary ? Number(summary.averageRating.toFixed(1)) : 0,
+            totalReviews: summary?.totalReviews || 0,
+            reviews
+        });
+    } catch (error) {
+        res.status(500).json({success: false, message: error.message});
+    }
+}
+
+export const getRoomReviewSummaries = async (req, res) => {
+    try {
+        const summaries = await Booking.aggregate([
+            {$match: {rating: {$gte: 1, $lte: 5}}},
+            {$group: {
+                _id: '$room',
+                averageRating: {$avg: '$rating'},
+                totalReviews: {$sum: 1}
+            }}
+        ]);
+
+        res.json({
+            success: true,
+            summaries: summaries.map(summary => ({
+                roomId: summary._id,
+                averageRating: Number(summary.averageRating.toFixed(1)),
+                totalReviews: summary.totalReviews
+            }))
+        });
+    } catch (error) {
+        res.status(500).json({success: false, message: error.message});
     }
 }

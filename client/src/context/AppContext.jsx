@@ -18,6 +18,7 @@ export const AppProvider = ({children}) => {
     const [showHotelReg, setShowHotelReg] = useState(false);
     const [searchedCities, setSearchedCities] = useState([])
     const [rooms, setRooms] = useState([])
+    const [reviewSummaries, setReviewSummaries] = useState({})
 
     const fetchUser = async ()=> {
         try {
@@ -58,10 +59,29 @@ export const AppProvider = ({children}) => {
         fetchRooms()
     },[])
 
+    const fetchReviewSummaries = async () => {
+        try {
+            const {data} = await axios.get('/api/bookings/reviews/summary')
+            if(data.success) {
+                setReviewSummaries(Object.fromEntries(
+                    data.summaries.map(summary => [summary.roomId, summary])
+                ))
+            } else {
+                toast.error(data.message)
+            }
+        } catch(error) {
+            toast.error(error.response?.data?.message || error.message)
+        }
+    }
+
+    useEffect(()=>{
+        fetchReviewSummaries()
+    },[])
+
     const value = {
         currency, navigate, user, getToken, isOwner, setIsOwner, axios,
         showHotelReg, setShowHotelReg, searchedCities, setSearchedCities,
-        rooms, setRooms
+        rooms, setRooms, reviewSummaries, fetchReviewSummaries
     }
 
     return (

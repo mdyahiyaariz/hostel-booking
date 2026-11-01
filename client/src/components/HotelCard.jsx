@@ -1,8 +1,13 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { assets } from '../assets/assets'
+import StarRating from './StarRating'
+import { useAppContext } from '../context/AppContext'
 
 const HotelCard = ({ room, index }) => {
+    const {reviewSummaries} = useAppContext()
+    const reviewSummary = reviewSummaries[room._id]
+
     return (
         <Link to={'/rooms/' + room._id} onClick={() => scrollTo(0, 0)} key={room._id}  className="relative max-w-70 w-full rounded-xl overflow-hidden bg-white text-gray-500/90 shadow-[0px_4px_4px_rgba(0,0,0,0.05)]" >
             <img src={room.images[0]} alt=""/>
@@ -11,9 +16,21 @@ const HotelCard = ({ room, index }) => {
                 <div className='flex items-center justify-between'>
                     <p className='font-playfair text-xl font-medium text-gray-800'>{room.hotel.name}</p>
                     <div className='flex items-center gap-1'>
-                        <img src={assets.starIconFilled} alt="star_icon" /> 4.5
+                        {reviewSummary?.totalReviews ? (
+                            <>
+                                <StarRating rating={Math.round(reviewSummary.averageRating)} />
+                                <span>{reviewSummary.averageRating.toFixed(1)}</span>
+                            </>
+                        ) : (
+                            <span className='text-xs text-gray-500'>No reviews yet</span>
+                        )}
                     </div>
                 </div>
+                {reviewSummary?.totalReviews > 0 && (
+                    <p className='mt-1 text-xs text-gray-500'>
+                        {reviewSummary.totalReviews} {reviewSummary.totalReviews === 1 ? 'review' : 'reviews'}
+                    </p>
+                )}
                 <div className='flex items-center gap-1 text-sm'>
                     <img src={assets.locationIcon} alt="location-icon" />
                     <span>{room.hotel.address}</span>

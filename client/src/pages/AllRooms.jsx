@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { assets, facilityIcons, roomsDummyData } from '../assets/assets'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import StarRating from '../components/StarRating';
 import { useAppContext } from '../context/AppContext';
+import toast from 'react-hot-toast';
 
 const CheckBox = ({label, selected=false, onChange = () => { }})=>{
     return (
@@ -24,8 +25,9 @@ const RadioButton = ({label, selected=false, onChange = () => { }})=>{
 
 const AllRooms = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const {rooms, navigate, currency} = useAppContext();
+    const {rooms, navigate, currency, axios} = useAppContext();
     const [openFilters, setOpenFilters] = useState(false);
+    const [reviewSummaries, setReviewSummaries] = useState({})
     const [selectedFilters, setSelectedFilters] = useState({
         roomType: [],
         priceRange: []
@@ -48,6 +50,24 @@ const AllRooms = () => {
         "Price High to Low",
         "Newest First"
     ];
+
+    useEffect(()=>{
+        const fetchReviewSummaries = async () => {
+            try {
+                const {data} = await axios.get('/api/bookings/reviews/summary');
+                if(data.success) {
+                    setReviewSummaries(Object.fromEntries(
+                        data.summaries.map(summary => [summary.roomId, summary])
+                    ));
+                } else {
+                    toast.error(data.message);
+                }
+            } catch(error) {
+                toast.error(error.response?.data?.message || error.message);
+            }
+        }
+        fetchReviewSummaries();
+    },[axios])
 
     // Handle chnages for filters and sorting
     const handleFilterChange = (checked, value, type) => {
@@ -138,8 +158,12 @@ const AllRooms = () => {
                         <p onClick={()=>{navigate(`/rooms/${room._id}`); scrollTo(0,0)}}
                             className='text-gray-800 text-3xl font-playfair cursor-pointer'>{room.hotel.name}</p>
                         <div className='flex items-center'>
-                            <StarRating />
-                            <p className='ml-2'>200+ reviews</p>
+                            <StarRating rating={Math.round(reviewSummaries[room._id]?.averageRating || 0)} />
+                            <p className='ml-2'>
+                                {reviewSummaries[room._id]?.totalReviews
+                                    ? `${reviewSummaries[room._id].averageRating.toFixed(1)} (${reviewSummaries[room._id].totalReviews} ${reviewSummaries[room._id].totalReviews === 1 ? 'review' : 'reviews'})`
+                                    : 'No reviews yet'}
+                            </p>
                         </div>
                         <div className='flex items-center gap-1 text-gray-500 mt-2 text-sm'>
                             <img src={assets.locationIcon} alt="location-icon" />

@@ -14,6 +14,7 @@ const RoomDetails = () => {
     const [checkOutDate, setCheckOutDate] = useState(null)
     const [guests, setGuests] = useState(1)
     const [isAvailable, setIsAvailable] = useState(false)
+    const [reviewData, setReviewData] = useState({averageRating: 0, totalReviews: 0, reviews: []})
     // Check if Room is available
     const checkAvailability = async ()=>{
         try {
@@ -65,19 +66,38 @@ const RoomDetails = () => {
         const room = rooms.find(room => room._id === id)
         room && setRoom(room)
         room && setMainImage(room.images[0])
-    },[rooms])
+    },[rooms, id])
+
+    useEffect(()=>{
+        const fetchReviews = async () => {
+            try {
+                const {data} = await axios.get(`/api/bookings/reviews/room/${id}`);
+                if(data.success) {
+                    setReviewData(data);
+                } else {
+                    toast.error(data.message);
+                }
+            } catch(error) {
+                toast.error(error.response?.data?.message || error.message);
+            }
+        }
+        fetchReviews();
+    },[axios, id])
 
   return room && (
     <div className='py-28 md:py-35 px-4 md:px-16 lg:px-24 xl:px-32'>
         {/*Room Details*/}
         <div className='flex flex-col md:flex-row items-start md:items-center gap-2'>
             <h1 className='text-3xl md:text-4xl font-playfair'>{room.hotel.name} <span className='font-inter text-sm'>({room.roomType})</span></h1>
-            <p className='text-xs font-inter py-1.5 px-3 text-white bg-orange-500 rounded-full'>20% OFF</p>
         </div>
         {/*Room Rating*/}
         <div className='flex items-center gap-1 mt-2'>
-            <StarRating />
-            <p className='ml-2'>200+ reviews</p>
+            <StarRating rating={Math.round(reviewData.averageRating)} />
+            <p className='ml-2'>
+                {reviewData.totalReviews
+                    ? `${reviewData.averageRating.toFixed(1)} (${reviewData.totalReviews} ${reviewData.totalReviews === 1 ? 'review' : 'reviews'})`
+                    : 'No reviews yet'}
+            </p>
         </div>
         {/*Room Address*/}
         <div className='flex items-center gap-1 text-gray-500 mt-2'>
@@ -156,16 +176,30 @@ const RoomDetails = () => {
                 mark the number of guests to get the exact price for groups.
             </p>
         </div>
+        <section className='max-w-3xl mb-12'>
+            <h2 className='text-2xl font-playfair mb-5'>Guest Reviews ({reviewData.totalReviews})</h2>
+            {reviewData.reviews.length ? reviewData.reviews.map((review, index)=>(
+                <article key={`${review.createdAt}-${index}`} className='border-b border-gray-200 py-5'>
+                    <div className='flex items-center gap-3'>
+                        {review.userImage && <img src={review.userImage} alt='' className='h-10 w-10 rounded-full object-cover'/>}
+                        <div>
+                            <p className='font-medium text-gray-800'>{review.username}</p>
+                            <div className='flex items-center gap-2'>
+                                <StarRating rating={review.rating} />
+                                <span className='text-xs text-gray-500'>{new Date(review.createdAt).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {review.reviewText && <p className='mt-3 text-sm text-gray-600'>{review.reviewText}</p>}
+                </article>
+            )) : <p className='text-gray-500'>Guests who have completed a stay have not reviewed this room yet.</p>}
+        </section>
         {/*Hosted By */}
         <div className='flex flex-col items-start gap-4'>
             <div className='flex gap-4'>
                 <img src={room.hotel.owner.image} alt="Host" className='h-14 w-14 md:h-18 md:w-18 rounded-full'/>
                 <div>
                     <p className='text-lg md:text-xl'>Hosted By {room.hotel.name}</p>
-                    <div className='flex items-center mt-1'>
-                        <StarRating />
-                        <p className='ml-2'>200+ reviews</p>
-                    </div>
                 </div>
             </div>
             <button className='px-6 py-2.5 mt-4 rounded text-white bg-primary hover:bg-orimary-dull transition-all cursor-pointer'>Contact Now</button>
