@@ -61,7 +61,7 @@ export const createBooking = async (req,res) => {
         })
 
         const mailOptions = {
-            from: process.env.MAIL_FROM, // sender address
+            from: process.env.SENDER_EMAIL, // sender address
             to: req.user.email, // list of recipients
             subject: 'Hotel Booking Details', // subject line
             html: `
@@ -73,7 +73,7 @@ export const createBooking = async (req,res) => {
                     <li><strong>Hotel Name:</strong> ${roomData.hotel.name}</li>
                     <li><strong>Location:</strong> ${roomData.hotel.address}</li>
                     <li><strong>Date:</strong> ${booking.checkInDate}</li>
-                    <li><strong>Booking Amount:</strong> ${process.env.CURRENCY || '$'} ${booking.totalPrice} /night</li>
+                    <li><strong>Booking Amount:</strong> ${process.env.CURRENCY || '₹'} ${booking.totalPrice} /night</li>
                 </ul>
                 <p>We look forward to welcoming you</p>
                 <p>If you need to make any chnages, feel free to contact us.</p>
