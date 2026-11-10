@@ -1,23 +1,23 @@
-# StayEase - Hotel Booking Platform
+# QuickStay - Hostel Booking Platform
 
-StayEase is a full-stack hotel room booking application. Guests can browse rooms, check availability, make bookings and payments, and leave reviews. Hotel owners can register their property, manage room listings, and monitor bookings and revenue.
+QuickStay is a full-stack hostel room booking application. Guests can browse rooms, check availability, make bookings and payments, and leave reviews. Hostel owners can register their property, manage room listings, and monitor bookings and revenue.
 
 ## Features
 
 ### Guests
 - Browse featured and available rooms, view room details, amenities, and reviews.
 - Check room availability for selected dates and book a stay.
-- Pay with Stripe or choose pay-at-hotel.
+- Pay with Stripe or choose pay-at-hostel.
 - View bookings, payment status, and room reviews.
 - Receive booking confirmation by email.
 
 ### Hotel owners
-- Register a hotel and add rooms with photos and amenities.
+- Register a hostel and add rooms with photos and amenities.
 - Upload room photos through Cloudinary and manage room availability.
 - View bookings, payment status, booking totals, and revenue in a dashboard.
 
 ### Platform
-- Clerk authentication for users and hotel owners.
+- Clerk authentication for users and hostel owners.
 - Date-overlap checks to prevent booking a room for already-booked dates.
 - Stripe webhook integration to update payment status.
 - MongoDB persistence for users, hotels, rooms, and bookings.
